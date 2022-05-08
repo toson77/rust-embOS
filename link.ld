@@ -1,5 +1,7 @@
 /* STM32F401 */
 /* 1K = 1024 bytes */
+/* https://www.st.com/resource/ja/reference_manual/rm0368-stm32f401xbc-and-stm32f401xde-advanced-armbased-32bit-mcus-stmicroelectronics.pdf 3.3 flash 2.4 sram*/
+
 MEMORY
 {
 	FLASH : ORIGIN = 0x08000000, LENGTH = 512K
@@ -25,6 +27,27 @@ SECTIONS
 	{
 		*(.text .text.*);
 	} > FLASH
+
+	.rodata :
+	{
+		*(.rodata .rodata.*);
+	} > FLASH
+
+	.bss (NOLOAD):
+	{
+		_sbss = .;
+		*(.bss .bss.*);
+		_ebss = .;
+	} > RAM
+
+	.data : AT(ADDR(.rodata) + SIZEOF(.rodata))
+	{
+		_sdata = .;
+		*(.data .data.*);
+		_edata = .;
+	} > RAM
+
+	_sidata = LOADADDR(.data);
 
 	/DISCARD/ :
 	{
