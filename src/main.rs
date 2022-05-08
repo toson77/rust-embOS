@@ -1,9 +1,12 @@
+#![feature(asm)]
 #![no_main]
 #![no_std]
 use core::panic::PanicInfo;
 use core::ptr;
 use cortex_m_semihosting::hprintln;
+mod process;
 mod systick;
+use process::ContextFrame;
 
 #[panic_handler]
 fn panic(_panic: &PanicInfo<'_>) -> ! {
@@ -35,6 +38,29 @@ pub unsafe extern "C" fn Reset() -> ! {
     hprintln!("Hello World").unwrap();
 
     systick::init();
+
+    #[link_section = ".app_stack"]
+    static mut APP_STACK: [u8; 1024] = [0; 1024];
+
+    let ptr = (&APP_STACK[0] as *const u8 as usize) + 1024 - 0x20;
+    let context_frame: &mut ContextFrame = &mut *(ptr as *mut ContextFrame);
+
+    context_frame.r0 = 0;
+    context_frame.r1 = 0;
+    context_frame.r2 = 0;
+    context_frame.r3 = 0;
+    context_frame.r12 = 0;
+    context_frame.lr = 0;
+    context_frame.return_addr = app_main as u32;
+    context_frame.xpsr = 0x0100_0000;
+    asm!(
+        "
+        msr psp, r0
+        svc 0
+        "
+        ::"{r0}"(ptr):"r4", "r5", "r6", "r8", "r9", "r10", "r11":"volatile");
+
+    hprintln!("Kernel").unwrap();
     loop {}
 }
 
@@ -49,7 +75,6 @@ extern "C" {
     fn MemManage();
     fn BusFault();
     fn UsageFault();
-    fn SVCall();
     fn PendSV();
 }
 
@@ -82,4 +107,35 @@ pub extern "C" fn DefaultExceptionHandler() {
 #[no_mangle]
 pub extern "C" fn SysTick() {
     hprintln!("Systick").unwrap();
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn SVCall() {
+    asm!(
+        "
+        cmp lr, #0xfffffff9
+        bne to_kernel
+
+        mov r9, #1
+        msr CONTROL, r0
+        movw lr, #0xfffd
+        movt lr, #0xffff
+        bx lr
+
+        to_kernel:
+        mov r0, #0
+        msr CONTROL, r0
+        movw lr, #0xfff9
+        movt lr, #0xffff
+        bx lr
+        "
+    ::::"volatile");
+}
+
+extern "C" fn app_main() -> ! {
+    hprintln!("App").unwrap();
+    unsafe {
+        asm!("svc 0"::::"volatile");
+    }
+    loop {}
 }
