@@ -10,7 +10,11 @@ const MPU_RBAR_ADDR: usize = 0xE000_ED9C;
 pub fn init() {
     hprintln!("enabling MPU");
     let mpu_type_value = unsafe { read_volatile(MPU_TYPE_ADDR as *const u32) };
-    hprintln!("value: {:b}", mpu_type_value);
+    if mpu_type_value != 0 {
+        hprintln!("MPU exists");
+    } else {
+        hprintln!("MPU doesn't exist");
+    }
     unsafe {
         //disable MPU
         write_volatile(MPU_CTRL_ADDR as *mut u32, 0x0000_0000);

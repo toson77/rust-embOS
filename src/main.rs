@@ -46,6 +46,8 @@ pub unsafe extern "C" fn Reset() -> ! {
 
     systick::init();
     mpu::init();
+    //led::init();
+    //led::turn_on();
 
     #[link_section = ".app_stack"]
     static mut APP_STACK: [u8; 2048] = [0; 2048];
@@ -66,8 +68,6 @@ pub unsafe extern "C" fn Reset() -> ! {
     sched.exec();
 
     hprintln!("Kernel").unwrap();
-    //  led::init();
-    // led::turn_on();
 }
 
 pub union Vector {
@@ -77,7 +77,7 @@ pub union Vector {
 
 extern "C" {
     fn NMI();
-    fn HardFault();
+    //fn HardFault();
     fn MemManage();
     fn BusFault();
     fn UsageFault();
@@ -107,6 +107,12 @@ pub static EXCEPTIONS: [Vector; 14] = [
 
 #[no_mangle]
 pub extern "C" fn DefaultExceptionHandler() {
+    loop {}
+}
+
+#[no_mangle]
+pub extern "C" fn HardFault() {
+    hprintln!("HardFault").unwrap();
     loop {}
 }
 
