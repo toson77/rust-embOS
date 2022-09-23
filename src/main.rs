@@ -12,6 +12,8 @@ mod scheduler;
 use scheduler::Scheduler;
 mod systick;
 use process::ContextFrame;
+mod led;
+mod mpu;
 
 #[panic_handler]
 fn panic(_panic: &PanicInfo<'_>) -> ! {
@@ -43,6 +45,7 @@ pub unsafe extern "C" fn Reset() -> ! {
     hprintln!("Hello World").unwrap();
 
     systick::init();
+    mpu::init();
 
     #[link_section = ".app_stack"]
     static mut APP_STACK: [u8; 2048] = [0; 2048];
@@ -61,28 +64,10 @@ pub unsafe extern "C" fn Reset() -> ! {
     sched.push(&mut item2);
     sched.push(&mut item3);
     sched.exec();
-    // hprintln!("Kernel").unwrap();
-
-    let ptr = (&APP_STACK[0] as *const u8 as usize) + 1024 - 0x20;
-    let context_frame: &mut ContextFrame = &mut *(ptr as *mut ContextFrame);
-
-    context_frame.r0 = 0;
-    context_frame.r1 = 0;
-    context_frame.r2 = 0;
-    context_frame.r3 = 0;
-    context_frame.r12 = 0;
-    context_frame.lr = 0;
-    context_frame.return_addr = app_main as u32;
-    context_frame.xpsr = 0x0100_0000;
-    asm!(
-        "
-        msr psp, r0
-        svc 0
-        "
-        ::"{r0}"(ptr):"r4", "r5", "r6", "r8", "r9", "r10", "r11":"volatile");
 
     hprintln!("Kernel").unwrap();
-    loop {}
+    //  led::init();
+    // led::turn_on();
 }
 
 pub union Vector {
@@ -137,7 +122,7 @@ pub unsafe extern "C" fn SVCall() {
         cmp lr, #0xfffffff9
         bne to_kernel
 
-        mov r9, #1
+        mov r0, #1
         msr CONTROL, r0
         movw lr, #0xfffd
         movt lr, #0xffff
@@ -154,13 +139,11 @@ pub unsafe extern "C" fn SVCall() {
 }
 
 extern "C" fn app_main() -> ! {
-    let mut i = 0;
     loop {
-        hprintln!("App:{}", i).unwrap();
-        unsafe {
-            asm!("svc 0"::::"volatile");
-            i += 1;
-        }
+        hprintln!("App1").unwrap();
+        led::init();
+        led::turn_on();
+        unsafe { asm!("svc 0"::::"volatile") };
     }
 }
 extern "C" fn app_main2() -> ! {
