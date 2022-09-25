@@ -23,3 +23,14 @@ pub fn turn_on() {
         write_volatile((GPIO_A_ADDR + GPIO_ODR_OFFSET) as *mut u32, writing_value);
     }
 }
+pub fn turn_off() {
+    unsafe {
+        let reg_value: u32 = read_volatile((GPIO_A_ADDR + GPIO_ODR_OFFSET) as *mut u32);
+        let writing_value: u32 = reg_value & (0x0 << (LED_PIN));
+        write_volatile((GPIO_A_ADDR + GPIO_ODR_OFFSET) as *mut u32, writing_value);
+    }
+}
+pub fn switch() {
+    init();
+    turn_on();
+}

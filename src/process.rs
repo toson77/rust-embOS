@@ -1,3 +1,4 @@
+use crate::led;
 use core::marker::PhantomData;
 #[repr(C)]
 pub struct ContextFrame {
@@ -12,8 +13,8 @@ pub struct ContextFrame {
 }
 
 pub struct Process<'a> {
-    sp: *mut u8,
-    regs: [u32; 8],
+    pub sp: *mut u8,
+    pub regs: [u32; 8],
     marker: PhantomData<&'a u8>,
 }
 
@@ -38,7 +39,7 @@ impl<'a> Process<'a> {
 
     pub fn exec(&mut self) {
         unsafe {
-            asm!(
+            llvm_asm!(
                 "
                 msr psp, r0
                 ldmia r1, {r4-r11}
@@ -52,5 +53,9 @@ impl<'a> Process<'a> {
                 :"volatile"
             );
         }
+    }
+    pub fn led(&mut self) {
+        led::init();
+        led::turn_on();
     }
 }
