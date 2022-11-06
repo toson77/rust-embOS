@@ -3,6 +3,7 @@ use crate::lib1::StackFrame;
 use crate::linked_list::{LinkedList, ListItem};
 use crate::process::Process;
 use crate::syscall::SYSCALL_FIRED;
+use crate::syscall_id;
 use cortex_m_semihosting::hprintln;
 pub struct Scheduler<'a> {
     list: LinkedList<'a, Process<'a>>,
@@ -44,12 +45,12 @@ impl<'a> Scheduler<'a> {
                     //hprintln!("r0 {}", base_frame.r0).unwrap();
                     let svc_id = base_frame.r0;
                     match svc_id {
-                        1 => {
+                        syscall_id::LED_ON => {
                             //hprintln!("svc:led_on").unwrap();
                             led::init();
                             led::turn_on();
                         }
-                        2 => {
+                        syscall_id::LED_OFF => {
                             led::turn_off();
                         }
                         _ => {}

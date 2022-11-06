@@ -1,6 +1,5 @@
 use crate::led;
-pub const LED_ON: u32 = 1;
-pub const LED_OFF: u32 = 2;
+use crate::syscall_id;
 
 #[no_mangle]
 #[used]
@@ -10,7 +9,7 @@ pub fn led_on() {
     unsafe {
         asm!(
             "svc 1",
-            in("r0") LED_ON,
+            in("r0") syscall_id::LED_ON,
         );
     }
 }
@@ -19,7 +18,7 @@ pub fn led_off() {
     unsafe {
         asm!(
             "svc 1",
-            in("r0") LED_OFF,
+            in("r0") syscall_id::LED_OFF,
         );
     }
 }
