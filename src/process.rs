@@ -12,9 +12,18 @@ pub struct ContextFrame {
     pub xpsr: u32,
 }
 
+#[derive(PartialEq)]
+pub enum ProcessState {
+    READY,
+    RUNNING,
+    WAITING,
+    DORMANT,
+}
+
 pub struct Process<'a> {
     pub sp: *mut u8,
     pub regs: [u32; 8],
+    pub state: ProcessState,
     marker: PhantomData<&'a u8>,
 }
 
@@ -34,6 +43,7 @@ impl<'a> Process<'a> {
         Process {
             sp: sp as *mut u8,
             regs: [0; 8],
+            state: ProcessState::DORMANT,
             marker: PhantomData,
         }
     }
