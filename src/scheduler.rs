@@ -53,6 +53,7 @@ impl<'a> Scheduler<'a> {
                         syscall_id::LED_OFF => {
                             led::turn_off();
                         }
+                        syscall_id::SERIAL_PRINT => {}
                         _ => {}
                     }
                 }

@@ -24,6 +24,7 @@ impl<'a> Process<'a> {
         let context_freame: &mut ContextFrame = unsafe { &mut *(sp as *mut ContextFrame) };
         context_freame.r0 = 0;
         context_freame.r1 = 0;
+        context_freame.r2 = 0;
         context_freame.r3 = 0;
         context_freame.r12 = 0;
         context_freame.lr = 0;
