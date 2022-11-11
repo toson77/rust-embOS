@@ -1,7 +1,7 @@
-i#![no_std]
+#![no_std]
 
-use core::ptr::NonNull;
 use core::marker::PhantomData;
+use core::ptr::NonNull;
 
 pub struct ListItem<'a, T> {
     value: T,
@@ -67,15 +67,14 @@ impl<'a, T> LinkedList<'a, T> {
         self.head.is_none()
     }
 
-    pub fn head_mut(&mut self)-> Option<&mut T> {
-        self.head.map(|ptr| unsafe { &mut *ptr.as_ptr() }.deref_mut())
+    pub fn head_mut(&mut self) -> Option<&mut T> {
+        self.head
+            .map(|ptr| unsafe { &mut *ptr.as_ptr() }.deref_mut())
     }
 
     pub fn pop(&mut self) -> Option<&'a mut ListItem<'a, T>> {
         let result = self.head.take();
-        let next = result.and_then(|mut ptr| unsafe {
-            ptr.as_mut().next
-        });
+        let next = result.and_then(|mut ptr| unsafe { ptr.as_mut().next });
 
         if next.is_none() {
             self.last = None;
@@ -89,8 +88,8 @@ impl<'a, T> LinkedList<'a, T> {
 
 #[cfg(test)]
 mod test {
-    use ListItem;
     use LinkedList;
+    use ListItem;
 
     #[test]
     fn test_list() {
