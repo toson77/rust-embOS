@@ -1,17 +1,26 @@
 #![feature(asm)]
 #![no_main]
 #![no_std]
+#![feature(naked_functions)]
+#![feature(llvm_asm)]
+mod led;
+mod lib1;
+mod linked_list;
+mod mpu;
+mod process;
+mod scheduler;
+mod svc;
+mod syscall;
+mod syscall_id;
+mod systick;
 use core::panic::PanicInfo;
 use core::ptr;
 use cortex_m_semihosting::hprintln;
-mod linked_list;
 use linked_list::ListItem;
-mod process;
-use process::Process;
-mod scheduler;
-use scheduler::Scheduler;
-mod systick;
 use process::ContextFrame;
+use process::Process;
+use scheduler::Scheduler;
+use syscall::SYSCALL_FIRED;
 
 #[panic_handler]
 fn panic(_panic: &PanicInfo<'_>) -> ! {
@@ -43,6 +52,7 @@ pub unsafe extern "C" fn Reset() -> ! {
     hprintln!("Hello World").unwrap();
 
     systick::init();
+    mpu::init();
 
     #[link_section = ".app_stack"]
     static mut APP_STACK: [u8; 2048] = [0; 2048];
@@ -61,28 +71,8 @@ pub unsafe extern "C" fn Reset() -> ! {
     sched.push(&mut item2);
     sched.push(&mut item3);
     sched.exec();
-    // hprintln!("Kernel").unwrap();
-
-    let ptr = (&APP_STACK[0] as *const u8 as usize) + 1024 - 0x20;
-    let context_frame: &mut ContextFrame = &mut *(ptr as *mut ContextFrame);
-
-    context_frame.r0 = 0;
-    context_frame.r1 = 0;
-    context_frame.r2 = 0;
-    context_frame.r3 = 0;
-    context_frame.r12 = 0;
-    context_frame.lr = 0;
-    context_frame.return_addr = app_main as u32;
-    context_frame.xpsr = 0x0100_0000;
-    asm!(
-        "
-        msr psp, r0
-        svc 0
-        "
-        ::"{r0}"(ptr):"r4", "r5", "r6", "r8", "r9", "r10", "r11":"volatile");
 
     hprintln!("Kernel").unwrap();
-    loop {}
 }
 
 pub union Vector {
@@ -92,7 +82,7 @@ pub union Vector {
 
 extern "C" {
     fn NMI();
-    fn HardFault();
+    //fn HardFault();
     fn MemManage();
     fn BusFault();
     fn UsageFault();
@@ -126,18 +116,24 @@ pub extern "C" fn DefaultExceptionHandler() {
 }
 
 #[no_mangle]
-pub extern "C" fn SysTick() {
-    hprintln!("Systick").unwrap();
+pub extern "C" fn HardFault() {
+    hprintln!("HardFault").unwrap();
+    loop {}
 }
 
 #[no_mangle]
+pub extern "C" fn SysTick() {
+    hprintln!("Systick").unwrap();
+}
+#[no_mangle]
+#[naked]
 pub unsafe extern "C" fn SVCall() {
-    asm!(
+    /*
+    llvm_asm!(
         "
         cmp lr, #0xfffffff9
         bne to_kernel
-
-        mov r9, #1
+        mov r0, #1
         msr CONTROL, r0
         movw lr, #0xfffd
         movt lr, #0xffff
@@ -150,32 +146,64 @@ pub unsafe extern "C" fn SVCall() {
         movt lr, #0xffff
         bx lr
         "
-    ::::"volatile");
+        ::::"volatile"
+    );
+    */
+    asm!(
+        "cmp lr, #0xfffffff9",
+        "bne 1f",
+        /* switch thread mode to unprivileged */
+        "mov r0, #1",
+        "msr CONTROL, r0",
+        "movw lr, #0xfffd",
+        "movt lr, #0xffff",
+        "bx lr",
+        "1:",
+        "mov r0, #0",
+        "msr CONTROL, r0",
+        "ldr r0, =SYSCALL_FIRED",
+        "mov r1, #1",
+        "str r1, [r0, #0]",
+        "movw lr, #0xfff9",
+        "movt lr, #0xffff",
+        "bx lr",
+        options(noreturn),
+    );
 }
 
 extern "C" fn app_main() -> ! {
-    let mut i = 0;
     loop {
-        hprintln!("App:{}", i).unwrap();
-        unsafe {
-            asm!("svc 0"::::"volatile");
-            i += 1;
-        }
+        hprintln!("App1").unwrap();
+        //led::init();
+        //led::turn_on();
+        //svc::switch_led();
+        hprintln!("led_on").unwrap();
+        syscall::led_on();
+        hprintln!("after_syscall").unwrap();
+        call_svc();
+        hprintln!("after_call_svc").unwrap();
     }
 }
 extern "C" fn app_main2() -> ! {
     loop {
         hprintln!("App2").unwrap();
-        unsafe {
-            asm!("svc 0"::::"volatile");
-        }
+        hprintln!("led_off").unwrap();
+        syscall::led_off();
+        hprintln!("after_syscall").unwrap();
+        call_svc();
     }
 }
 extern "C" fn app_main3() -> ! {
     loop {
         hprintln!("App3").unwrap();
-        unsafe {
-            asm!("svc 0"::::"volatile");
-        }
+        call_svc();
+    }
+}
+
+fn call_svc() {
+    unsafe {
+        asm!("svc 0",
+        in("r0") 0,
+            );
     }
 }
