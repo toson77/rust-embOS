@@ -5,6 +5,7 @@ use crate::process::Process;
 use crate::syscall::SYSCALL_FIRED;
 use crate::syscall_id;
 use cortex_m_semihosting::hprintln;
+
 pub struct Scheduler<'a> {
     list: LinkedList<'a, Process<'a>>,
 }
@@ -27,6 +28,7 @@ impl<'a> Scheduler<'a> {
     pub fn exec(&mut self) -> ! {
         loop {
             let current = self.list.head_mut();
+            let mut shuld_schedule_next = false;
             if current.is_none() {
                 unimplemented!();
             }
@@ -45,6 +47,9 @@ impl<'a> Scheduler<'a> {
                     //hprintln!("r0 {}", base_frame.r0).unwrap();
                     let svc_id = base_frame.r0;
                     match svc_id {
+                        syscall_id::DISPATCH => {
+                            shuld_schedule_next = true;
+                        }
                         syscall_id::LED_ON => {
                             //hprintln!("svc:led_on").unwrap();
                             led::init();
@@ -53,14 +58,14 @@ impl<'a> Scheduler<'a> {
                         syscall_id::LED_OFF => {
                             led::turn_off();
                         }
-                        _ => {
-                            self.schedule_next();
-                        }
+                        _ => {}
                     }
                 }
                 None => {}
             }
-            //self.schedule_next();
+            if shuld_schedule_next {
+                self.schedule_next()
+            }
         }
     }
 }

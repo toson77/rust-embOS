@@ -122,8 +122,19 @@ pub extern "C" fn HardFault() {
 }
 
 #[no_mangle]
-pub extern "C" fn SysTick() {
+pub unsafe extern "C" fn SysTick() {
     hprintln!("Systick").unwrap();
+    /*
+    asm!(
+        "movw lr, #0xfff9",
+        "movt lr, #0xffff",
+        "ldr r0, #0",
+        "mov r1, #1",
+        "str r1, [r0, #0]",
+        options(nostack),
+    );
+    */
+    //call_svc_dispatch();
 }
 #[no_mangle]
 #[naked]
@@ -158,6 +169,7 @@ pub unsafe extern "C" fn SVCall() {
         "movw lr, #0xfffd",
         "movt lr, #0xffff",
         "bx lr",
+        /* to kernel */
         "1:",
         "mov r0, #0",
         "msr CONTROL, r0",
@@ -173,37 +185,37 @@ pub unsafe extern "C" fn SVCall() {
 
 extern "C" fn app_main() -> ! {
     loop {
-        hprintln!("App1").unwrap();
+        //hprintln!("App1").unwrap();
         //led::init();
         //led::turn_on();
         //svc::switch_led();
-        hprintln!("led_on").unwrap();
-        syscall::led_on();
-        hprintln!("after_syscall").unwrap();
-        call_svc();
-        hprintln!("after_call_svc").unwrap();
+        //hprintln!("led_on").unwrap();
+        //syscall::led_on();
+        //hprintln!("after_syscall").unwrap();
+        //call_svc_dispatch();
+        //hprintln!("after_call_svc").unwrap();
     }
 }
 extern "C" fn app_main2() -> ! {
     loop {
         hprintln!("App2").unwrap();
-        hprintln!("led_off").unwrap();
+        //hprintln!("led_off").unwrap();
         syscall::led_off();
-        hprintln!("after_syscall").unwrap();
-        call_svc();
+        //hprintln!("after_syscall").unwrap();
+        //call_svc_dispatch();
     }
 }
 extern "C" fn app_main3() -> ! {
     loop {
         hprintln!("App3").unwrap();
-        call_svc();
+        //call_svc_dispatch();
     }
 }
 
-fn call_svc() {
+fn call_svc_dispatch() {
     unsafe {
         asm!("svc 0",
-        in("r0") 0,
+        in("r0") syscall_id::DISPATCH,
             );
     }
 }
