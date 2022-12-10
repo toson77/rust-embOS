@@ -53,12 +53,14 @@ impl<'a> Scheduler<'a> {
                         syscall_id::LED_OFF => {
                             led::turn_off();
                         }
-                        _ => {}
+                        _ => {
+                            self.schedule_next();
+                        }
                     }
                 }
                 None => {}
             }
-            self.schedule_next();
+            //self.schedule_next();
         }
     }
 }

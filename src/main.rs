@@ -5,21 +5,21 @@
 #![feature(llvm_asm)]
 mod led;
 mod lib1;
+mod linked_list;
 mod mpu;
+mod process;
+mod scheduler;
 mod svc;
 mod syscall;
-mod systick;
-mod scheduler;
-mod process;
-mod linked_list;
 mod syscall_id;
+mod systick;
 use core::panic::PanicInfo;
 use core::ptr;
 use cortex_m_semihosting::hprintln;
 use linked_list::ListItem;
+use process::ContextFrame;
 use process::Process;
 use scheduler::Scheduler;
-use process::ContextFrame;
 use syscall::SYSCALL_FIRED;
 
 #[panic_handler]
@@ -177,6 +177,7 @@ extern "C" fn app_main() -> ! {
         //led::init();
         //led::turn_on();
         //svc::switch_led();
+        hprintln!("led_on").unwrap();
         syscall::led_on();
         hprintln!("after_syscall").unwrap();
         call_svc();
@@ -186,7 +187,9 @@ extern "C" fn app_main() -> ! {
 extern "C" fn app_main2() -> ! {
     loop {
         hprintln!("App2").unwrap();
+        hprintln!("led_off").unwrap();
         syscall::led_off();
+        hprintln!("after_syscall").unwrap();
         call_svc();
     }
 }
