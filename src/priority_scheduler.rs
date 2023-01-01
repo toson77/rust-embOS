@@ -5,12 +5,13 @@ use crate::process::Process;
 use crate::syscall::SYSCALL_FIRED;
 use crate::syscall_id;
 use cortex_m_semihosting::hprintln;
+
 pub struct Scheduler<'a> {
     list1: LinkedList<'a, Process<'a>>,
     list2: LinkedList<'a, Process<'a>>,
     list3: LinkedList<'a, Process<'a>>,
     current_list_num: u32,
-    //lists: [LinkedList<'a, Process<'a>>; 10];
+    lists: [LinkedList<'a, Process<'a>>; 3],
 }
 impl<'a> Scheduler<'a> {
     pub fn new() -> Self {
@@ -18,6 +19,7 @@ impl<'a> Scheduler<'a> {
             list1: LinkedList::new(1),
             list2: LinkedList::new(2),
             list3: LinkedList::new(3),
+            lists: [LinkedList::new(1), LinkedList::new(2), LinkedList::new(3)],
             current_list_num: 1,
         }
     }
@@ -29,6 +31,7 @@ impl<'a> Scheduler<'a> {
             3 => self.list3.push(item),
             _ => {}
         }
+        //self.lists[item.priority as usize].push(item);
     }
 
     fn schedule_next(&mut self) {
@@ -47,6 +50,8 @@ impl<'a> Scheduler<'a> {
             }
             _ => {}
         }
+        //let current = self.lists[self.current_list_num as usize].pop().unwrap();
+        //self.lists[self.current_list_num as usize].push(current);
     }
 
     pub fn exec(&mut self) -> ! {
@@ -57,6 +62,7 @@ impl<'a> Scheduler<'a> {
                 3 => self.list3.head_mut(),
                 _ => self.list1.head_mut(),
             };
+            //let current = self.lists[self.current_list_num as usize].head_mut();
             if current.is_none() {
                 unimplemented!();
             }
