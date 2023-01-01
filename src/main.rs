@@ -6,7 +6,9 @@
 mod led;
 mod lib1;
 mod linked_list;
+mod linked_lists;
 mod mpu;
+mod priority_scheduler;
 mod process;
 mod scheduler;
 mod svc;
@@ -16,10 +18,12 @@ mod systick;
 use core::panic::PanicInfo;
 use core::ptr;
 use cortex_m_semihosting::hprintln;
-use linked_list::ListItem;
+//use linked_list::ListItem;
+use linked_lists::ListItem;
 use process::ContextFrame;
 use process::Process;
-use scheduler::Scheduler;
+//use scheduler::Scheduler;
+use priority_scheduler::Scheduler;
 use syscall::SYSCALL_FIRED;
 
 #[panic_handler]
@@ -61,11 +65,11 @@ pub unsafe extern "C" fn Reset() -> ! {
     #[link_section = ".app_stack"]
     static mut APP_STACK3: [u8; 2048] = [0; 2048];
     let mut process1 = Process::new(&mut APP_STACK, app_main);
-    let mut item1 = ListItem::new(process1);
+    let mut item1 = ListItem::new(process1, 1, 1);
     let process2 = Process::new(&mut APP_STACK2, app_main2);
-    let mut item2 = ListItem::new(process2);
+    let mut item2 = ListItem::new(process2, 1, 2);
     let process3 = Process::new(&mut APP_STACK3, app_main3);
-    let mut item3 = ListItem::new(process3);
+    let mut item3 = ListItem::new(process3, 3, 3);
     let mut sched = Scheduler::new();
     sched.push(&mut item1);
     sched.push(&mut item2);
