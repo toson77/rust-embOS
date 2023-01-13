@@ -91,6 +91,25 @@ impl<'a> Scheduler<'a> {
                         }
                         _ => {
                             self.schedule_next();
+                            for i in 1..=3 {
+                                if i == 1 {
+                                    if self.list1.head_mut().is_some() {
+                                        self.current_list_num = 1;
+                                        break;
+                                    }
+                                } else if i == 2 {
+                                    if self.list2.head_mut().is_some() {
+                                        self.current_list_num = 2;
+                                        break;
+                                    }
+                                } else if i == 3 {
+                                    if self.list3.head_mut().is_some() {
+                                        self.current_list_num = 3;
+                                        break;
+                                    }
+                                }
+                            }
+                            hprintln!("current_list_num={}", self.current_list_num).unwrap();
                         }
                     }
                 }
