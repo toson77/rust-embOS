@@ -55,7 +55,7 @@ pub unsafe extern "C" fn Reset() -> ! {
 
     hprintln!("Hello World").unwrap();
 
-    systick::init();
+    //systick::init();
     mpu::init();
 
     #[link_section = ".app_stack"]
@@ -180,9 +180,12 @@ pub unsafe extern "C" fn SVCall() {
 
 extern "C" fn app_main() -> ! {
     let mut num: u8 = 1;
-    hprintln!("ptr={:p}", &num).unwrap();
-    let mut test: [u8; 1500] = [10; 1500];
-    hprintln!("test={:p}", &test).unwrap();
+    let mut test: [u8; 1100] = [10; 1100];
+    //hprintln!("test={:p}", &test).unwrap();
+    let mut num2: u8 = 1;
+    let num_ptr: *const u8 = &num2;
+    hprintln!("{:p}", &num).unwrap();
+    hprintln!("{:p}", &num2).unwrap();
     //hprintln!("test_end={:p}", &test[999]).unwrap();
     loop {
         hprintln!("App1").unwrap();
