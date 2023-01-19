@@ -89,10 +89,18 @@ impl<'a> Scheduler<'a> {
                         syscall_id::LED_OFF => {
                             led::turn_off();
                         }
-                        syscall_id::THRED_WAIT => {}
-                        syscall_id::THRED_SLEEP => {}
-                        syscall_id::THRED_WAKEUP => {}
-                        syscall_id::THREAD_CHPRI => {}
+                        syscall_id::THRED_WAIT => {
+                            todo!()
+                        }
+                        syscall_id::THRED_SLEEP => {
+                            todo!()
+                        }
+                        syscall_id::THRED_WAKEUP => {
+                            todo!()
+                        }
+                        syscall_id::THREAD_CHPRI => {
+                            todo!()
+                        }
                         _ => {
                             self.schedule_next();
                             for i in 1..=3 {
