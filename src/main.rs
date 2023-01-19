@@ -60,10 +60,13 @@ pub unsafe extern "C" fn Reset() -> ! {
 
     #[link_section = ".app_stack"]
     static mut APP_STACK: [u8; 2048] = [0; 2048];
+    hprintln!("app_stack1_ptr={:p}", &APP_STACK[0]);
     #[link_section = ".app_stack"]
     static mut APP_STACK2: [u8; 2048] = [0; 2048];
+    hprintln!("app_stack2_ptr={:p}", &APP_STACK2[0]);
     #[link_section = ".app_stack"]
     static mut APP_STACK3: [u8; 2048] = [0; 2048];
+    hprintln!("app_stack3_ptr={:p}", &APP_STACK3[0]);
     let mut process1 = Process::new(&mut APP_STACK, app_main);
     let mut item1 = ListItem::new(process1, 1, 1);
     let process2 = Process::new(&mut APP_STACK2, app_main2);
@@ -176,24 +179,35 @@ pub unsafe extern "C" fn SVCall() {
 }
 
 extern "C" fn app_main() -> ! {
+    let mut num: u8 = 1;
+    hprintln!("ptr={:p}", &num).unwrap();
+    let mut test: [u8; 1500] = [10; 1500];
+    hprintln!("test={:p}", &test).unwrap();
+    //hprintln!("test_end={:p}", &test[999]).unwrap();
     loop {
         hprintln!("App1").unwrap();
+        //let mut test: [u8; 100] = [10; 100];
         //led::init();
         //led::turn_on();
         //svc::switch_led();
         hprintln!("led_on").unwrap();
         syscall::led_on();
         hprintln!("after_syscall").unwrap();
+        hprintln!("app1_num={}", num).unwrap();
+        num += 1;
         call_svc();
         hprintln!("after_call_svc").unwrap();
     }
 }
 extern "C" fn app_main2() -> ! {
+    let mut num: u8 = 1;
     loop {
         hprintln!("App2").unwrap();
         hprintln!("led_off").unwrap();
         syscall::led_off();
         hprintln!("after_syscall").unwrap();
+        hprintln!("app2_num={}", num).unwrap();
+        num += 1;
         call_svc();
     }
 }
