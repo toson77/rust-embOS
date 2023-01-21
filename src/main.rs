@@ -70,11 +70,11 @@ pub unsafe extern "C" fn Reset() -> ! {
     hprintln!("app_stack1_end={:x}", sp + 0x20);
     hprintln!("app_stack2_ptr={:p}", &APP_STACK2[0]);
     hprintln!("app_stack3_ptr={:p}", &APP_STACK3[0]);
-    let mut process1 = Process::new(&mut APP_STACK, app_main);
+    let mut process1 = Process::new(&mut APP_STACK, app_main, 1);
     let mut item1 = ListItem::new(process1, 1, 1);
-    let process2 = Process::new(&mut APP_STACK2, app_main2);
+    let process2 = Process::new(&mut APP_STACK2, app_main2, 2);
     let mut item2 = ListItem::new(process2, 1, 2);
-    let process3 = Process::new(&mut APP_STACK3, app_main3);
+    let process3 = Process::new(&mut APP_STACK3, app_main3, 3);
     let mut item3 = ListItem::new(process3, 3, 3);
     let mut sched = Scheduler::new();
     sched.push(&mut item1);

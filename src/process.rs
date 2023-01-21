@@ -15,11 +15,12 @@ pub struct ContextFrame {
 pub struct Process<'a> {
     pub sp: *mut u8,
     pub regs: [u32; 8],
+    pub id: u8,
     marker: PhantomData<&'a u8>,
 }
 
 impl<'a> Process<'a> {
-    pub fn new(stack: &'a mut [u8], app_main: extern "C" fn() -> !) -> Self {
+    pub fn new(stack: &'a mut [u8], app_main: extern "C" fn() -> !, id: u8) -> Self {
         let sp = (&stack[0] as *const u8 as usize) + stack.len() - 0x20;
         let context_frame: &mut ContextFrame = unsafe { &mut *(sp as *mut ContextFrame) };
         context_frame.r0 = 0;
@@ -33,6 +34,7 @@ impl<'a> Process<'a> {
         Process {
             sp: sp as *mut u8,
             regs: [0; 8],
+            id,
             marker: PhantomData,
         }
     }
