@@ -59,13 +59,13 @@ pub unsafe extern "C" fn Reset() -> ! {
     mpu::init();
 
     #[link_section = ".app_stack"]
-    static mut APP_STACK: [u8; 2048] = [0; 2048];
-    hprintln!("app_stack1_ptr={:p}", &APP_STACK[0]);
+    pub static mut APP_STACK: [u8; 2048] = [0; 2048];
     #[link_section = ".app_stack"]
     static mut APP_STACK2: [u8; 2048] = [0; 2048];
-    hprintln!("app_stack2_ptr={:p}", &APP_STACK2[0]);
     #[link_section = ".app_stack"]
     static mut APP_STACK3: [u8; 2048] = [0; 2048];
+    hprintln!("app_stack1_ptr={:p}", &APP_STACK[0]);
+    hprintln!("app_stack2_ptr={:p}", &APP_STACK2[0]);
     hprintln!("app_stack3_ptr={:p}", &APP_STACK3[0]);
     let mut process1 = Process::new(&mut APP_STACK, app_main);
     let mut item1 = ListItem::new(process1, 1, 1);
