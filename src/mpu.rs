@@ -7,7 +7,7 @@ const MPU_RNR_ADDR: usize = 0xE000_ED98;
 const MPU_RASR_ADDR: usize = 0xE000_EDA0;
 const MPU_RBAR_ADDR: usize = 0xE000_ED9C;
 
-pub fn stack_protect_test() {
+pub fn stack_protect_thread1() {
     unsafe {
         //disable MPU
         write_volatile(MPU_CTRL_ADDR as *mut u32, 0x0000_0000);
@@ -20,19 +20,6 @@ pub fn stack_protect_test() {
             MPU_RASR_ADDR as *mut u32,
             0b000_0_0_010_00_001_0_0_0_00000000_00_11100_1,
         );
-        /*
-        write_volatile(
-            MPU_RASR_ADDR as *mut u32,
-            0b000_0_0_011_00_001_0_0_0_00000000_00_11100_1,
-        );
-        */
-        /*
-                write_volatile(
-                    MPU_RASR_ADDR as *mut u32,
-                    0b000_0_0_011_00_001_0_0_0_00000000_00_11100_1,
-                );
-        */
-
         //regions8(allow access stack)
         write_volatile(MPU_RNR_ADDR as *mut u32, 0x0000_0007);
         write_volatile(MPU_RBAR_ADDR as *mut u32, 0x2000_0017);
@@ -46,7 +33,7 @@ pub fn stack_protect_test() {
     }
 }
 
-pub fn stack_protect_test2() {
+pub fn stack_protect_thread2() {
     unsafe {
         //disable MPU
         write_volatile(MPU_CTRL_ADDR as *mut u32, 0x0000_0000);
@@ -71,6 +58,33 @@ pub fn stack_protect_test2() {
         write_volatile(MPU_CTRL_ADDR as *mut u32, 0x0000_0001);
     }
 }
+
+pub fn stack_protect_thread3() {
+    unsafe {
+        //disable MPU
+        write_volatile(MPU_CTRL_ADDR as *mut u32, 0x0000_0000);
+
+        //regions2(protect all stack unprivileged Read only )
+        write_volatile(MPU_RNR_ADDR as *mut u32, 0x0000_0001);
+        write_volatile(MPU_RBAR_ADDR as *mut u32, 0x2000_0011);
+        write_volatile(
+            MPU_RASR_ADDR as *mut u32,
+            0b000_0_0_010_00_001_0_0_0_00000000_00_11100_1,
+        );
+
+        //regions8(allow access stack)
+        write_volatile(MPU_RNR_ADDR as *mut u32, 0x0000_0007);
+        write_volatile(MPU_RBAR_ADDR as *mut u32, 0x2000_1017);
+        write_volatile(
+            MPU_RASR_ADDR as *mut u32,
+            0b000_0_0_011_00_001_0_0_0_00000000_00_01010_1,
+        );
+
+        //enable MPU
+        write_volatile(MPU_CTRL_ADDR as *mut u32, 0x0000_0001);
+    }
+}
+
 pub fn init() {
     hprintln!("enabling MPU");
     let mpu_type_value = unsafe { read_volatile(MPU_TYPE_ADDR as *const u32) };
@@ -150,6 +164,6 @@ pub fn init() {
 
         //enable MPU
         write_volatile(MPU_CTRL_ADDR as *mut u32, 0x0000_0001);
-        stack_protect_test();
+        stack_protect_thread1();
     }
 }
