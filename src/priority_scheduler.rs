@@ -1,6 +1,7 @@
 use crate::led;
 use crate::lib1::StackFrame;
 use crate::linked_lists::{LinkedList, ListItem};
+use crate::mpu;
 use crate::process::Process;
 use crate::syscall::SYSCALL_FIRED;
 use crate::syscall_id;
@@ -69,6 +70,7 @@ impl<'a> Scheduler<'a> {
             let mut syscall: Option<*const u32> = None;
             current.map(|p| {
                 //privirage_task();
+                hprintln!("p:exec_b").unwrap();
                 p.exec();
                 unsafe {
                     hprintln!("svc {}", SYSCALL_FIRED);
@@ -107,6 +109,9 @@ impl<'a> Scheduler<'a> {
                                 if i == 1 {
                                     if self.list1.head_mut().is_some() {
                                         self.current_list_num = 1;
+                                        hprintln!("setp_1").unwrap();
+                                        //mpu::stack_protect_test2();
+                                        hprintln!("s").unwrap();
                                         break;
                                     }
                                 } else if i == 2 {

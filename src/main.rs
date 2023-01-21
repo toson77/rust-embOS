@@ -60,11 +60,14 @@ pub unsafe extern "C" fn Reset() -> ! {
 
     #[link_section = ".app_stack"]
     pub static mut APP_STACK: [u8; 2048] = [0; 2048];
+    let sp = (&APP_STACK[0] as *const u8 as usize) + APP_STACK.len() - 0x20;
     #[link_section = ".app_stack"]
     static mut APP_STACK2: [u8; 2048] = [0; 2048];
     #[link_section = ".app_stack"]
     static mut APP_STACK3: [u8; 2048] = [0; 2048];
     hprintln!("app_stack1_ptr={:p}", &APP_STACK[0]);
+    hprintln!("app_stack1_sp={:x}", sp);
+    hprintln!("app_stack1_end={:x}", sp + 0x20);
     hprintln!("app_stack2_ptr={:p}", &APP_STACK2[0]);
     hprintln!("app_stack3_ptr={:p}", &APP_STACK3[0]);
     let mut process1 = Process::new(&mut APP_STACK, app_main);
@@ -90,7 +93,7 @@ pub union Vector {
 extern "C" {
     fn NMI();
     //fn HardFault();
-    fn MemManage();
+    //fn MemManage();
     fn BusFault();
     fn UsageFault();
     fn PendSV();
@@ -119,9 +122,15 @@ pub static EXCEPTIONS: [Vector; 14] = [
 
 #[no_mangle]
 pub extern "C" fn DefaultExceptionHandler() {
+    hprintln!("DefaultExceptionHandler").unwrap();
     loop {}
 }
 
+#[no_mangle]
+pub extern "C" fn MemManage() {
+    hprintln!("MemManage").unwrap();
+    loop {}
+}
 #[no_mangle]
 pub extern "C" fn HardFault() {
     hprintln!("HardFault").unwrap();
@@ -179,8 +188,10 @@ pub unsafe extern "C" fn SVCall() {
 }
 
 extern "C" fn app_main() -> ! {
+    hprintln!("App1").unwrap();
     let mut num: u8 = 1;
-    let mut test: [u8; 1100] = [10; 1100];
+    //let mut test: [u8; 1100] = [10; 1100];
+    //let mut test: [u8; 1100] = [10; 1100];
     //hprintln!("test={:p}", &test).unwrap();
     let mut num2: u8 = 1;
     let num_ptr: *const u8 = &num2;
@@ -204,6 +215,7 @@ extern "C" fn app_main() -> ! {
 }
 extern "C" fn app_main2() -> ! {
     let mut num: u8 = 1;
+    hprintln!("{:p}", &num).unwrap();
     loop {
         hprintln!("App2").unwrap();
         hprintln!("led_off").unwrap();
