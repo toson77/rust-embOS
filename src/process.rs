@@ -15,24 +15,26 @@ pub struct ContextFrame {
 pub struct Process<'a> {
     pub sp: *mut u8,
     pub regs: [u32; 8],
+    pub id: u8,
     marker: PhantomData<&'a u8>,
 }
 
 impl<'a> Process<'a> {
-    pub fn new(stack: &'a mut [u8], app_main: extern "C" fn() -> !) -> Self {
+    pub fn new(stack: &'a mut [u8], app_main: extern "C" fn() -> !, id: u8) -> Self {
         let sp = (&stack[0] as *const u8 as usize) + stack.len() - 0x20;
-        let context_freame: &mut ContextFrame = unsafe { &mut *(sp as *mut ContextFrame) };
-        context_freame.r0 = 0;
-        context_freame.r1 = 0;
-        context_freame.r3 = 0;
-        context_freame.r12 = 0;
-        context_freame.lr = 0;
-        context_freame.return_addr = app_main as u32;
-        context_freame.xpsr = 0x0100_0000;
+        let context_frame: &mut ContextFrame = unsafe { &mut *(sp as *mut ContextFrame) };
+        context_frame.r0 = 0;
+        context_frame.r1 = 0;
+        context_frame.r3 = 0;
+        context_frame.r12 = 0;
+        context_frame.lr = 0;
+        context_frame.return_addr = app_main as u32;
+        context_frame.xpsr = 0x0100_0000;
 
         Process {
             sp: sp as *mut u8,
             regs: [0; 8],
+            id,
             marker: PhantomData,
         }
     }

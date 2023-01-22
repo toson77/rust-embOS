@@ -1,18 +1,27 @@
-i#![no_std]
+#![no_std]
 
-use core::ptr::NonNull;
 use core::marker::PhantomData;
+use core::ptr::NonNull;
 
 pub struct ListItem<'a, T> {
     value: T,
     next: Option<NonNull<ListItem<'a, T>>>,
     marker: PhantomData<&'a ListItem<'a, T>>,
+    id: u32,
+    pub priority: u32,
+}
+
+enum TaskState {
+    SLEEP,
+    READY,
+    ACTIVE,
 }
 
 pub struct LinkedList<'a, T> {
     head: Option<NonNull<ListItem<'a, T>>>,
     last: Option<NonNull<ListItem<'a, T>>>,
     marker: PhantomData<&'a ListItem<'a, T>>,
+    priority: u32,
 }
 
 use core::ops::{Deref, DerefMut};
@@ -32,21 +41,24 @@ impl<'a, T> DerefMut for ListItem<'a, T> {
 }
 
 impl<'a, T> ListItem<'a, T> {
-    pub fn new(value: T) -> Self {
+    pub fn new(value: T, priority: u32, id: u32) -> Self {
         ListItem {
             value,
             next: None,
             marker: PhantomData,
+            id,
+            priority,
         }
     }
 }
 
 impl<'a, T> LinkedList<'a, T> {
-    pub fn new() -> Self {
+    pub fn new(priority: u32) -> Self {
         LinkedList {
             head: None,
             last: None,
             marker: PhantomData,
+            priority,
         }
     }
 
@@ -67,15 +79,14 @@ impl<'a, T> LinkedList<'a, T> {
         self.head.is_none()
     }
 
-    pub fn head_mut(&mut self)-> Option<&mut T> {
-        self.head.map(|ptr| unsafe { &mut *ptr.as_ptr() }.deref_mut())
+    pub fn head_mut(&mut self) -> Option<&mut T> {
+        self.head
+            .map(|ptr| unsafe { &mut *ptr.as_ptr() }.deref_mut())
     }
 
     pub fn pop(&mut self) -> Option<&'a mut ListItem<'a, T>> {
         let result = self.head.take();
-        let next = result.and_then(|mut ptr| unsafe {
-            ptr.as_mut().next
-        });
+        let next = result.and_then(|mut ptr| unsafe { ptr.as_mut().next });
 
         if next.is_none() {
             self.last = None;
@@ -89,15 +100,18 @@ impl<'a, T> LinkedList<'a, T> {
 
 #[cfg(test)]
 mod test {
-    use ListItem;
     use LinkedList;
+    use ListItem;
 
     #[test]
     fn test_list() {
-        let mut item1 = ListItem::new(1);
-        let mut item2 = ListItem::new(2);
-        let mut item3 = ListItem::new(3);
-        let mut list = LinkedList::new();
+        let mut item1 = ListItem::new(1, 1, 1);
+        let mut item2 = ListItem::new(2, 2, 2);
+        let mut item3 = ListItem::new(3, 3, 3);
+        let mut item4 = ListItem::new(4, 2, 4);
+        let mut list1 = LinkedList::new(1);
+        let mut list2 = LinkedList::new(2);
+        let mut list3 = LinkedList::new(3);
 
         list.push(&mut item1);
         list.push(&mut item2);

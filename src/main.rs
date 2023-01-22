@@ -6,7 +6,9 @@
 mod led;
 mod lib1;
 mod linked_list;
+mod linked_lists;
 mod mpu;
+mod priority_scheduler;
 mod process;
 mod scheduler;
 mod svc;
@@ -16,10 +18,12 @@ mod systick;
 use core::panic::PanicInfo;
 use core::ptr;
 use cortex_m_semihosting::hprintln;
-use linked_list::ListItem;
+//use linked_list::ListItem;
+use linked_lists::ListItem;
 use process::ContextFrame;
 use process::Process;
-use scheduler::Scheduler;
+//use scheduler::Scheduler;
+use priority_scheduler::Scheduler;
 use syscall::SYSCALL_FIRED;
 
 #[panic_handler]
@@ -51,21 +55,27 @@ pub unsafe extern "C" fn Reset() -> ! {
 
     hprintln!("Hello World").unwrap();
 
-    systick::init();
+    //systick::init();
     mpu::init();
 
     #[link_section = ".app_stack"]
-    static mut APP_STACK: [u8; 2048] = [0; 2048];
+    pub static mut APP_STACK: [u8; 2048] = [0; 2048];
+    let sp = (&APP_STACK[0] as *const u8 as usize) + APP_STACK.len() - 0x20;
     #[link_section = ".app_stack"]
     static mut APP_STACK2: [u8; 2048] = [0; 2048];
     #[link_section = ".app_stack"]
     static mut APP_STACK3: [u8; 2048] = [0; 2048];
-    let mut process1 = Process::new(&mut APP_STACK, app_main);
-    let mut item1 = ListItem::new(process1);
-    let process2 = Process::new(&mut APP_STACK2, app_main2);
-    let mut item2 = ListItem::new(process2);
-    let process3 = Process::new(&mut APP_STACK3, app_main3);
-    let mut item3 = ListItem::new(process3);
+    hprintln!("app_stack1_ptr={:p}", &APP_STACK[0]);
+    hprintln!("app_stack1_sp={:x}", sp);
+    hprintln!("app_stack1_end={:x}", sp + 0x20);
+    hprintln!("app_stack2_ptr={:p}", &APP_STACK2[0]);
+    hprintln!("app_stack3_ptr={:p}", &APP_STACK3[0]);
+    let mut process1 = Process::new(&mut APP_STACK, app_main, 1);
+    let mut item1 = ListItem::new(process1, 1, 1);
+    let process2 = Process::new(&mut APP_STACK2, app_main2, 2);
+    let mut item2 = ListItem::new(process2, 1, 2);
+    let process3 = Process::new(&mut APP_STACK3, app_main3, 3);
+    let mut item3 = ListItem::new(process3, 3, 3);
     let mut sched = Scheduler::new();
     sched.push(&mut item1);
     sched.push(&mut item2);
@@ -83,7 +93,7 @@ pub union Vector {
 extern "C" {
     fn NMI();
     //fn HardFault();
-    fn MemManage();
+    //fn MemManage();
     fn BusFault();
     fn UsageFault();
     fn PendSV();
@@ -112,9 +122,15 @@ pub static EXCEPTIONS: [Vector; 14] = [
 
 #[no_mangle]
 pub extern "C" fn DefaultExceptionHandler() {
+    hprintln!("DefaultExceptionHandler").unwrap();
     loop {}
 }
 
+#[no_mangle]
+pub extern "C" fn MemManage() {
+    hprintln!("MemManage").unwrap();
+    loop {}
+}
 #[no_mangle]
 pub extern "C" fn HardFault() {
     hprintln!("HardFault").unwrap();
@@ -172,24 +188,41 @@ pub unsafe extern "C" fn SVCall() {
 }
 
 extern "C" fn app_main() -> ! {
+    hprintln!("App1").unwrap();
+    let mut num: u8 = 1;
+    //let mut test: [u8; 1100] = [10; 1100];
+    //let mut test: [u8; 1100] = [10; 1100];
+    //hprintln!("test={:p}", &test).unwrap();
+    let mut num2: u8 = 1;
+    let num_ptr: *const u8 = &num2;
+    hprintln!("{:p}", &num).unwrap();
+    hprintln!("{:p}", &num2).unwrap();
+    //hprintln!("test_end={:p}", &test[999]).unwrap();
     loop {
         hprintln!("App1").unwrap();
+        //let mut test: [u8; 100] = [10; 100];
         //led::init();
         //led::turn_on();
         //svc::switch_led();
         hprintln!("led_on").unwrap();
         syscall::led_on();
         hprintln!("after_syscall").unwrap();
+        hprintln!("app1_num={}", num).unwrap();
+        num += 1;
         call_svc();
         hprintln!("after_call_svc").unwrap();
     }
 }
 extern "C" fn app_main2() -> ! {
+    let mut num: u8 = 1;
+    hprintln!("{:p}", &num).unwrap();
     loop {
         hprintln!("App2").unwrap();
         hprintln!("led_off").unwrap();
         syscall::led_off();
         hprintln!("after_syscall").unwrap();
+        hprintln!("app2_num={}", num).unwrap();
+        num += 1;
         call_svc();
     }
 }
