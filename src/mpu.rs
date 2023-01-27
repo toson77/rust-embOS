@@ -164,6 +164,6 @@ pub fn init() {
 
         //enable MPU
         write_volatile(MPU_CTRL_ADDR as *mut u32, 0x0000_0001);
-        stack_protect_thread1();
+        //stack_protect_thread1();
     }
 }

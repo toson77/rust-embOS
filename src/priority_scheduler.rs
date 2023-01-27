@@ -71,12 +71,14 @@ impl<'a> Scheduler<'a> {
             current.map(|p| {
                 //privirage_task();
                 hprintln!("p:exec_b").unwrap();
+                /*
                 match p.id {
                     1 => mpu::stack_protect_thread1(),
                     2 => mpu::stack_protect_thread2(),
                     3 => mpu::stack_protect_thread3(),
                     _ => {}
                 }
+                */
                 p.exec();
                 unsafe {
                     hprintln!("svc {}", SYSCALL_FIRED);

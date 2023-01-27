@@ -188,15 +188,10 @@ pub unsafe extern "C" fn SVCall() {
 }
 
 extern "C" fn app_main() -> ! {
-    hprintln!("App1").unwrap();
     let mut num: u8 = 1;
     //let mut test: [u8; 1100] = [10; 1100];
     //let mut test: [u8; 1100] = [10; 1100];
     //hprintln!("test={:p}", &test).unwrap();
-    let mut num2: u8 = 1;
-    let num_ptr: *const u8 = &num2;
-    hprintln!("{:p}", &num).unwrap();
-    hprintln!("{:p}", &num2).unwrap();
     //hprintln!("test_end={:p}", &test[999]).unwrap();
     loop {
         hprintln!("App1").unwrap();
@@ -213,16 +208,21 @@ extern "C" fn app_main() -> ! {
         hprintln!("after_call_svc").unwrap();
     }
 }
+
+fn overflow_test(n: u8) -> u8 {
+    let test: [u8; 500] = [10; 500];
+    hprintln!("{:x}", &test as *const u8 as usize + test.len()).unwrap();
+
+    if n == 0 {
+        return 0;
+    }
+    return overflow_test(n - 1);
+}
+
 extern "C" fn app_main2() -> ! {
-    let mut num: u8 = 1;
-    hprintln!("{:p}", &num).unwrap();
     loop {
         hprintln!("App2").unwrap();
-        hprintln!("led_off").unwrap();
-        syscall::led_off();
-        hprintln!("after_syscall").unwrap();
-        hprintln!("app2_num={}", num).unwrap();
-        num += 1;
+        overflow_test(4);
         call_svc();
     }
 }
