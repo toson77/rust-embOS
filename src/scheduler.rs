@@ -35,7 +35,7 @@ impl<'a> Scheduler<'a> {
                 //privirage_task();
                 p.exec();
                 unsafe {
-                    hprintln!("svc {}", SYSCALL_FIRED);
+                    //hprintln!("svc {}", SYSCALL_FIRED);
                 };
                 unsafe { syscall.replace(p.sp as *const u32) };
             });

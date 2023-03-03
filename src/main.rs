@@ -188,47 +188,46 @@ pub unsafe extern "C" fn SVCall() {
 }
 
 extern "C" fn app_main() -> ! {
-    hprintln!("App1").unwrap();
+    //hprintln!("App1").unwrap();
     let mut num: u8 = 1;
     //let mut test: [u8; 1100] = [10; 1100];
     //let mut test: [u8; 1100] = [10; 1100];
     //hprintln!("test={:p}", &test).unwrap();
     let mut num2: u8 = 1;
     let num_ptr: *const u8 = &num2;
-    hprintln!("{:p}", &num).unwrap();
-    hprintln!("{:p}", &num2).unwrap();
+    //hprintln!("{:p}", &num).unwrap();
+    //hprintln!("{:p}", &num2).unwrap();
     //hprintln!("test_end={:p}", &test[999]).unwrap();
     loop {
-        hprintln!("App1").unwrap();
+        //hprintln!("App1").unwrap();
         //let mut test: [u8; 100] = [10; 100];
         //led::init();
         //led::turn_on();
         //svc::switch_led();
-        hprintln!("led_on").unwrap();
+        //hprintln!("led_on").unwrap();
         syscall::led_on();
-        hprintln!("after_syscall").unwrap();
-        hprintln!("app1_num={}", num).unwrap();
+        //hprintln!("after_syscall").unwrap();
+        //hprintln!("app1_num={}", num).unwrap();
         num += 1;
         call_svc();
-        hprintln!("after_call_svc").unwrap();
     }
 }
 extern "C" fn app_main2() -> ! {
     let mut num: u8 = 1;
-    hprintln!("{:p}", &num).unwrap();
+    //hprintln!("{:p}", &num).unwrap();
     loop {
-        hprintln!("App2").unwrap();
-        hprintln!("led_off").unwrap();
+        //hprintln!("App2").unwrap();
+        //hprintln!("led_off").unwrap();
         syscall::led_off();
-        hprintln!("after_syscall").unwrap();
-        hprintln!("app2_num={}", num).unwrap();
+        //hprintln!("after_syscall").unwrap();
+        //hprintln!("app2_num={}", num).unwrap();
         num += 1;
         call_svc();
     }
 }
 extern "C" fn app_main3() -> ! {
     loop {
-        hprintln!("App3").unwrap();
+        //hprintln!("App3").unwrap();
         call_svc();
     }
 }

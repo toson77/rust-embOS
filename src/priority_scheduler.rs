@@ -70,7 +70,7 @@ impl<'a> Scheduler<'a> {
             let mut syscall: Option<*const u32> = None;
             current.map(|p| {
                 //privirage_task();
-                hprintln!("p:exec_b").unwrap();
+                //hprintln!("p:exec_b").unwrap();
                 match p.id {
                     1 => mpu::stack_protect_thread1(),
                     2 => mpu::stack_protect_thread2(),
@@ -115,9 +115,9 @@ impl<'a> Scheduler<'a> {
                                 if i == 1 {
                                     if self.list1.head_mut().is_some() {
                                         self.current_list_num = 1;
-                                        hprintln!("setp_1").unwrap();
+                                        //hprintln!("setp_1").unwrap();
                                         //mpu::stack_protect_test2();
-                                        hprintln!("s").unwrap();
+                                        //hprintln!("s").unwrap();
                                         break;
                                     }
                                 } else if i == 2 {
@@ -132,7 +132,7 @@ impl<'a> Scheduler<'a> {
                                     }
                                 }
                             }
-                            hprintln!("current_list_num={}", self.current_list_num).unwrap();
+                            //hprintln!("current_list_num={}", self.current_list_num).unwrap();
                         }
                     }
                 }
